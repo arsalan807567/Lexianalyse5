@@ -13,7 +13,7 @@ interface PayPalButtonProps {
 
 export const PayPalButton: React.FC<PayPalButtonProps> = ({ planName, amount, onSuccess, onError }) => {
   const { user } = useAuth();
-  const clientId = (import.meta as any).env.VITE_PAYPAL_CLIENT_ID;
+  const clientId = process.env.VITE_PAYPAL_CLIENT_ID;
 
   if (!clientId) {
     return (

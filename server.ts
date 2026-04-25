@@ -86,6 +86,10 @@ async function startServer() {
       if (captureResponse.data.status === "COMPLETED") {
         // Update user plan in Firestore via Admin SDK
         try {
+          // Check if admin is initialized properly
+          if (!admin.apps.length) {
+            throw new Error("Firebase Admin not initialized");
+          }
           const db = admin.firestore();
           await db.collection("users").doc(userId).update({
             plan: planName.toLowerCase(),
@@ -119,9 +123,21 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    const indexPath = path.join(distPath, 'index.html');
+    
+    // Check if dist/index.html exists to prevent white screen
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      if (req.accepts('html')) {
+        res.sendFile(indexPath, (err) => {
+          if (err) {
+            console.error("Error sending index.html. Did you run 'npm run build'?", err);
+            res.status(500).send("Application not built. Please run 'npm run build' before starting the server.");
+          }
+        });
+      } else {
+        res.status(404).json({ error: "Not found" });
+      }
     });
   }
 
