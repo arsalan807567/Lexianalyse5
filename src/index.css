@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Brand Colors */
+  --color-brand-primary: #041627;
+  --color-brand-secondary: #0453cd;
+  --color-brand-accent: #356ee7;
+  
+  /* Surface colors from design spec */
+  --color-surface-lowest: #ffffff;
+  --color-surface-low: #eff4ff;
+  --color-surface: #f8f9ff;
+  --color-surface-high: #dce9ff;
+  --color-surface-highest: #d3e4fe;
+  
+  --color-on-surface: #0b1c30;
+  --color-on-surface-variant: #44474c;
+  
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}

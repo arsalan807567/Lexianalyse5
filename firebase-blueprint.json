@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user plan and usage information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "plan": { "type": "string", "enum": ["free", "pro"] },
+        "usageCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "plan", "usageCount"]
+    },
+    "Analysis": {
+      "title": "Document Analysis",
+      "description": "Stores the results of a document analysis session.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "docName": { "type": "string" },
+        "docType": { "type": "string" },
+        "result": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "docName", "docType", "result", "createdAt"]
+    },
+    "Feedback": {
+      "title": "User Feedback",
+      "description": "Stores user feedback and bug reports.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "type": { "type": "string", "enum": ["bug", "feature", "general"] },
+        "message": { "type": "string" },
+        "rating": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userEmail", "type", "message", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/users/{userId}/analyses/{analysisId}": {
+      "schema": "Analysis",
+      "description": "User analysis history"
+    },
+    "/feedback/{feedbackId}": {
+      "schema": "Feedback",
+      "description": "App feedback"
+    }
+  }
+}
