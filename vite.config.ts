@@ -10,9 +10,9 @@ export default defineConfig(({mode}) => {
     plugins: [react(), tailwindcss()],
     base: '/',
     define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(apiKey),
-      'process.env.VITE_PAYPAL_CLIENT_ID': JSON.stringify(process.env.VITE_PAYPAL_CLIENT_ID || env.VITE_PAYPAL_CLIENT_ID),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      'process.env.GEMINI_API_KEY': JSON.stringify(apiKey || ''),
+      'process.env.VITE_PAYPAL_CLIENT_ID': JSON.stringify(process.env.VITE_PAYPAL_CLIENT_ID || env.VITE_PAYPAL_CLIENT_ID || ''),
+      'process.env.NODE_ENV': JSON.stringify(mode),
     },
     resolve: {
       alias: {
