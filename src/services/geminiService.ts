@@ -100,7 +100,7 @@ export async function analyzeDocument(
   docType: DocumentType,
   language: string = "English"
 ): Promise<AnalysisSummary> {
-  const modelName = "gemini-3-flash-preview";
+const modelName = "gemini-2.0-flash";
 
   const systemInstruction = `
     You are an advanced AI-powered document analysis engine "LexiAnalyse".
