@@ -13,8 +13,7 @@ interface PayPalButtonProps {
 
 export const PayPalButton: React.FC<PayPalButtonProps> = ({ planName, amount, onSuccess, onError }) => {
   const { user } = useAuth();
-  const clientId = process.env.VITE_PAYPAL_CLIENT_ID;
-
+  const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
   if (!clientId) {
     return (
       <div className="p-4 bg-orange-50 text-orange-700 rounded-lg text-xs font-medium border border-orange-100">
