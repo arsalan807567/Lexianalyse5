@@ -37,6 +37,126 @@ async function startServer() {
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
   });
+  const ANALYSIS_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    simpleSummary: { type: Type.STRING },
+    keyInformation: {
+      type: Type.OBJECT,
+      properties: {
+        parties: { type: Type.STRING },
+        dates: { type: Type.STRING },
+        paymentTerms: { type: Type.STRING },
+        responsibilities: { type: Type.STRING },
+      },
+      required: ["parties", "dates", "paymentTerms", "responsibilities"]
+    },
+    clauses: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          section: { type: Type.STRING },
+          description: { type: Type.STRING },
+        },
+        required: ["title", "section", "description"]
+      }
+    },
+    risks: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          description: { type: Type.STRING },
+        },
+        required: ["title", "description"]
+      }
+    },
+    benefits: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          description: { type: Type.STRING },
+        },
+        required: ["title", "description"]
+      }
+    },
+    checkCarefully: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          description: { type: Type.STRING },
+        },
+        required: ["title", "description"]
+      }
+    },
+    questions: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING }
+    },
+    verdict: {
+      type: Type.OBJECT,
+      properties: {
+        score: { type: Type.STRING },
+        reasoning: { type: Type.STRING },
+        confidence: { type: Type.NUMBER },
+      },
+      required: ["score", "reasoning", "confidence"]
+    }
+  },
+  required: ["simpleSummary","keyInformation","clauses","risks","benefits","checkCarefully","questions","verdict"]
+};
+
+app.post("/api/analyze", async (req: any, res: any) => {
+  const { content, docType, language } = req.body;
+
+  if (!content || !docType) {
+    return res.status(400).json({ error: "Missing content or docType" });
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+    const systemInstruction = `
+      You are an advanced AI-powered document analysis engine "LexiAnalyse".
+      Analyze the provided document which is a ${docType}.
+      IMPORTANT: You MUST respond in ${language || "English"}.
+      All string values in the JSON output MUST be in ${language || "English"}.
+      Rules:
+      - Simplify complex documents into plain language.
+      - Highlight risks (unfair terms, hidden conditions, penalties).
+      - Provide structured output.
+      - Be accurate and cautious. Do NOT hallucinate.
+    `;
+
+    const userPart = typeof content === 'string'
+      ? { text: content }
+      : { inlineData: { data: content.data, mimeType: content.mimeType } };
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [{ role: 'user', parts: [userPart] }],
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: ANALYSIS_SCHEMA as any
+      }
+    });
+
+    const text = response.text;
+    if (!text) throw new Error("Empty response from AI");
+    res.json(JSON.parse(text));
+  } catch (error: any) {
+    console.error("Analysis error:", error);
+    res.status(500).json({ error: error.message || "Analysis failed" });
+  }
+});
 
   // PayPal Token Retrieval
   const getPayPalAccessToken = async () => {
