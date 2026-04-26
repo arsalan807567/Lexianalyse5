@@ -64,9 +64,9 @@ export const AnalysisResultView: React.FC = () => {
       <div className="flex justify-between items-end">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-widest">
-              Document ID: #EC-{Math.floor(Math.random() * 9000) + 1000}
-            </span>
+           <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-widest">
+  Document ID: #{docId}
+</span>
             <span className="text-slate-400 text-xs">Generated {new Date().toLocaleDateString()}</span>
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-on-surface truncate max-w-full"> {docName} Analysis </h2>
