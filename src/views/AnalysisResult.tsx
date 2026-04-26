@@ -34,6 +34,7 @@ export const AnalysisResultView: React.FC = () => {
 
   const { analysis: initialAnalysis, docName, docType, rawContent } = state;
   const [analysis, setAnalysis] = useState(initialAnalysis);
+  const docId = useMemo(() => `EC-${Math.floor(Math.random() * 9000) + 1000}`, []);
 
   const handleTranslate = async (lang: string) => {
     if (lang === viewLanguage) return;
