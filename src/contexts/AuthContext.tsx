@@ -31,24 +31,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userDocRef = doc(db, 'users', user.uid);
         
         // Use a listener for real-time profile updates
-        unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
-          if (!docSnap.exists()) {
-            const profile = {
-              uid: user.uid,
-              email: user.email,
-              plan: 'free',
-              usageCount: 0,
-              createdAt: serverTimestamp()
-            };
-            await setDoc(userDocRef, profile);
-            setUserProfile(profile);
-          } else {
-            setUserProfile(docSnap.data());
-          }
-          setLoading(false);
-        }, (err) => {
-          console.error("Profile sync error:", err);
-          setLoading(false);
+      unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
+  // Do not create a profile until the user has verified their email
+  if (!user.emailVerified) {
+    setUserProfile(null);
+    setLoading(false);
+    return;
+  }
+
+  if (!docSnap.exists()) {
+    const profile = {
+      uid: user.uid,
+      email: user.email,
+      plan: 'free',
+      usageCount: 0,
+      createdAt: serverTimestamp()
+    };
+    await setDoc(userDocRef, profile);
+    setUserProfile(profile);
+  } else {
+    setUserProfile(docSnap.data());
+  }
+  setLoading(false);
+}, (err) => {
+  console.error("Profile sync error:", err);
+  setLoading(false);
+});
         });
       } else {
         setUserProfile(null);
