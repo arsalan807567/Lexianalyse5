@@ -5,6 +5,8 @@ import { fileURLToPath } from "url";
 import axios from "axios";
 import admin from "firebase-admin";
 import dotenv from "dotenv";
+import { GoogleGenAI } from "@google/genai";
+import { Type } from "@google/genai";
 
 // Load environment variables
 dotenv.config();
