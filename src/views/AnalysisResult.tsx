@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation, Navigate, NavLink } from 'react-router-dom';
 import { 
   FileText, 
