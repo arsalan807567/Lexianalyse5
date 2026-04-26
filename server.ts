@@ -17,14 +17,27 @@ const __dirname = path.dirname(__filename);
 
 // Initialize Firebase Admin (Only if credentials might be available or if we want to support it)
 // For now, we'll try to initialize using environment variables or a local config if it exists
-try {
-  if (!admin.apps.length) {
+if (!admin.apps.length) {
+  const projectId   = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey  = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (projectId && clientEmail && privateKey) {
     admin.initializeApp({
-      credential: admin.credential.applicationDefault(), // This works in Cloud Run if roles are set
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
     });
+    console.log("✓ Firebase Admin initialized successfully.");
+  } else {
+    const msg = "Firebase Admin credentials missing. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY in .env";
+    console.error(msg);
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(msg);
+    }
   }
-} catch (error) {
-  console.warn("Firebase Admin failed to initialize with default credentials. Plan updates will need manual handling or service account config.");
 }
 
 async function startServer() {
