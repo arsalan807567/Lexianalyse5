@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import axios from "axios";
 import admin from "firebase-admin";
+import { getAuth as getAdminAuth } from 'firebase-admin/auth';
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import { Type } from "@google/genai";
@@ -184,10 +185,60 @@ app.post("/api/analyze", async (req: any, res: any) => {
 
   // Secure PayPal Capture Endpoint
   app.post("/api/paypal/capture", async (req: any, res: any) => {
-    const { orderID, planName, userId } = req.body;
-    
-    if (!orderID || !planName || !userId) {
-      return res.status(400).json({ error: "Missing required fields" });
+  // Get the Authorization header — the client sends "Bearer <idToken>"
+  const authHeader = req.headers.authorization || "";
+  const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  if (!idToken) {
+    return res.status(401).json({ error: "Unauthorized — no token provided" });
+  }
+
+  // Verify the token with Firebase Admin
+  let decodedToken;
+  try {
+    decodedToken = await getAdminAuth().verifyIdToken(idToken);
+  } catch (e) {
+    return res.status(401).json({ error: "Unauthorized — invalid token" });
+  }
+
+  // Use the verified UID from the token, never from the request body
+  const userId = decodedToken.uid;
+
+  const { orderID, planName } = req.body;
+
+  if (!orderID || !planName) {
+    return res.status(400).json({ error: "Missing orderID or planName" });
+  }
+
+  try {
+    const accessToken = await getPayPalAccessToken();
+
+    const captureResponse = await axios.post(
+      `https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (captureResponse.data.status === "COMPLETED") {
+      const db = admin.firestore();
+      await db.collection("users").doc(userId).update({
+        plan: planName.toLowerCase(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      res.json({ status: "COMPLETED", message: "Plan upgraded successfully" });
+    } else {
+      res.status(400).json({ error: "Payment not completed" });
+    }
+  } catch (error: any) {
+    console.error("PayPal Capture Error:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to capture PayPal payment" });
+  }
+});
     }
 
     try {
