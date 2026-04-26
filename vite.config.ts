@@ -5,12 +5,10 @@ import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
-  const apiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   return {
     plugins: [react(), tailwindcss()],
     base: '/',
     define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(apiKey || ''),
       'process.env.VITE_PAYPAL_CLIENT_ID': JSON.stringify(process.env.VITE_PAYPAL_CLIENT_ID || env.VITE_PAYPAL_CLIENT_ID || ''),
       'process.env.NODE_ENV': JSON.stringify(mode),
     },
