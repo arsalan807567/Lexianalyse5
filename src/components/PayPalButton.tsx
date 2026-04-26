@@ -44,21 +44,38 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({ planName, amount, on
             }
           } as any);
         }}
-        onApprove={async (data, actions) => {
-          if (user) {
-            try {
-              const response = await fetch("/api/paypal/capture", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  orderID: data.orderID,
-                  planName: planName,
-                  userId: user.uid,
-                }),
-              });
+       onApprove={async (data, actions) => {
+  if (user) {
+    try {
+      // Get a fresh ID token from Firebase to prove who we are
+      const idToken = await user.getIdToken();
 
+      const response = await fetch("/api/paypal/capture", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          orderID: data.orderID,
+          planName: planName,
+          // DO NOT send userId — server gets it from the verified token
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.status === "COMPLETED") {
+        if (onSuccess) onSuccess();
+      } else {
+        throw new Error(result.error || "Capture failed");
+      }
+    } catch (err) {
+      console.error("Capture call error:", err);
+      if (onError) onError(err);
+    }
+  }
+}}
               const result = await response.json();
               
               if (result.status === "COMPLETED") {
